@@ -1,6 +1,10 @@
 package product;
 
 import java.util.ArrayList;
+import java.util.stream.Stream;
+
+import exceptions.NegativePriceException;
+import exceptions.NotFoundException;
 
 public class ProductController {
     private ArrayList<ProductModel> products;
@@ -13,18 +17,29 @@ public class ProductController {
         this.products = products;
     }
 
-    public String create(ProductModel payload) {
+    public String create(ProductModel payload) throws NegativePriceException {
 
-        return "Produto adicionado" ;
+        if (payload.getPriceInCents() < 0) {
+            throw new NegativePriceException();
+        }
+
+        return "Produto " + payload.getName() + " adicionado!";
     }
 
     public ArrayList<ProductModel> read() {
-        return products;
+        return getProducts();
     }
 
-    public int retrievePrice(String barCode) {
-        int price = 0;
+    public int retrievePrice(String barCode) throws NotFoundException {
 
-        return price;
+        Stream<ProductModel> allProducts = getProducts().stream();
+
+        ProductModel foundProduct = allProducts
+                .filter(p -> p.getBarCode()
+                .equals(barCode))
+                .findFirst()
+                .orElseThrow(NotFoundException::new);
+
+        return foundProduct.getPriceInCents();
     }
 }
